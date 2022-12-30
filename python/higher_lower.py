@@ -38,11 +38,8 @@ def display_options(option_a, option_b, score):
     print(vs)
     print(f"Against B: {option_b['name']}, a {option_b['description']}, from {option_b['country']}")
 
-def generate_new_index(current_index, start, stop):
-    new_index = random.randint(start, stop)
-    while new_index == current_index:
-        new_index = random.randint(start, stop)
-    return new_index
+def get_random_account():
+    return random.choice(data)
 
 def compare_followers(count_a, count_b):
     if count_a > count_b:
@@ -55,15 +52,15 @@ def compare_followers(count_a, count_b):
 def main():
     game_over = False
     score = 0
-    option_a_index, option_b_index = None, None
+    option_a, option_b = None, None
 
     while not game_over:
-        if not option_a_index:
-            option_a_index = random.randint(0, len(data)-1)
-        option_b_index = generate_new_index(option_a_index, 0, len(data)-1)
+        if not option_a:
+            option_a = get_random_account()
+        option_b = get_random_account()
 
-        option_a = data[option_a_index]
-        option_b = data[option_b_index]
+        while option_b == option_a:
+            option_b = get_random_account()
 
         display_options(option_a, option_b, score)
 
@@ -72,7 +69,7 @@ def main():
         
         if higher_option == 'Tie' or higher_option == player_choice:
             score += 1
-            option_a_index = option_b_index
+            option_a = option_b
         else:
             game_over = True
 
