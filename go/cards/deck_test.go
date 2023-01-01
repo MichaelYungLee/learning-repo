@@ -39,15 +39,19 @@ func TestDeal(t *testing.T) {
 	d := newDeck()
 	handSize := 5
 
-	hand, remainingDeck := deal(d, handSize)
+	hand := d.deal(handSize)
 
 	if len(hand) != handSize {
 		t.Errorf("Expected hand to have %v cards, but got %v instead.", handSize, len(hand))
 	}
 
-	if len(remainingDeck) != (len(d) - handSize) {
-		t.Errorf("Expected remaining deck to have %v cards, but got %v instead.", (len(d) - handSize), len(remainingDeck))
+	if len(d) != 47 {
+		t.Errorf("Expected deck to have 47 remaining cards, but got %v instead.", len(d))
 	}
+
+	/* if len(remainingDeck) != (len(d) - handSize) {
+		t.Errorf("Expected remaining deck to have %v cards, but got %v instead.", (len(d) - handSize), len(remainingDeck))
+	} */
 }
 
 func TestShuffle(t *testing.T) {
