@@ -10,12 +10,8 @@ class Snake():
     def __init__(self):
         self.body = []
         for i in range(3):
-            x, y = 0 - (20*i), 0
-            segment = Turtle("square")
-            segment.color("white")
-            segment.penup()
-            segment.setposition((x,y))
-            self.body.append(segment)
+            position = (0 - (20*i), 0)
+            self.add_segment(position)
         self.head = self.body[0]
 
     def up(self):
@@ -42,3 +38,13 @@ class Snake():
             next_position = next_segment.position()
             next_segment.setposition(current_position)
             current_position = next_position
+
+    def add_segment(self, position):
+        segment = Turtle("square")
+        segment.color("white")
+        segment.penup()
+        segment.setposition(position)
+        self.body.append(segment)
+
+    def extend(self):
+        self.add_segment(self.body[-1].position())
