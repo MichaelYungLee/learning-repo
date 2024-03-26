@@ -1,0 +1,28 @@
+Nginx Server
+- Port as specified in nginx.conf
+- Bind mount for config file
+
+PHP Server
+- Build from custom dockerfile because we want some extra extensions
+- Need to run as separate user to prevent files from being installed as root
+- Install PHP extensions using RUN
+- Delegated bind mount for src files
+  - Delegated so changes on container are reflected on host, but don't need immediate updates
+- Port defined in nginx.conf
+  - Default PHP image exposes port 9000
+
+MySQL
+- Set environment variables
+  - Done in a separate file
+
+Composer Container
+- Need to run as separate user to prevent files being installed as root
+- docker-compose run --rm composer create-project --prefer-dist laravel/laravel .
+
+Running Application
+- docker-compose up nginx php mysql
+
+
+Open shell on container to troubleshoot
+- docker container exec -it <container_name> sh
+  - To run as root, add "-u root"
