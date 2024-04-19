@@ -26,3 +26,11 @@ Running Application
 Open shell on container to troubleshoot
 - docker container exec -it <container_name> sh
   - To run as root, add "-u root"
+
+
+Bring up apps:
+- docker-compose up -d --build server]
+  - Allow time for MySQL to come up, otherwise conn refused error
+- docker-compose run artisan migrate
+- docker-compose run artisan view:cache
+Access on localhost:8000
