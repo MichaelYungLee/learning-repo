@@ -13,7 +13,7 @@ output "vpc_information" {
   value       = "Your ${aws_vpc.vpc.tags.Environment} VPC has an ID of ${aws_vpc.vpc.id}"
 }
 
-output "public_ip" {
+/* output "public_ip" {
   value = module.server.public_ip
 }
 
@@ -24,3 +24,11 @@ output "public_dns" {
 output "size" {
   value = module.server.size
 }
+
+output "asg_group_size" {
+  value = module.autoscaling.autoscaling_group_max_size
+}
+
+output "s3_bucket_name" {
+  value = module.s3-bucket.s3_bucket_bucket_domain_name
+} */
