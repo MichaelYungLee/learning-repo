@@ -161,8 +161,6 @@ resource "aws_security_group" "my-new-security-group" {
   name        = "web_server_inbound"
   description = "Allow inbound traffic for web server"
   vpc_id      = aws_vpc.vpc.id
-
-
 }
 
 
@@ -229,3 +227,47 @@ resource "aws_key_pair" "generated" {
     ignore_changes = [key_name]
   }
 }
+
+module "server" {
+  source          = "./modules/server"
+  ami             = data.aws_ami.amazon-linux-2.id
+  size            = "t2.micro"
+  subnet_id       = aws_subnet.public_subnets["public_subnet_3"].id
+  security_groups = [aws_security_group.my-new-security-group.id]
+}
+
+/* module "server_subnet_1" {
+  source      = "./modules/web_server"
+  ami         = data.aws_ami.amazon-linux-2.id
+  user        = "ec2-user"
+  key_name    = aws_key_pair.generated.key_name
+  private_key = tls_private_key.generated.private_key_pem
+  subnet_id   = aws_subnet.public_subnets["public_subnet_1"].id
+  security_groups = [
+    aws_security_group.my-new-security-group.id
+  ]
+} 
+
+module "autoscaling" {
+  source  = "github.com/terraform-aws-modules/terraform-aws-autoscaling"
+
+  # Autoscaling group
+  name = "myasg"
+
+  vpc_zone_identifier = [aws_subnet.private_subnets["private_subnet_1"].id, 
+  aws_subnet.private_subnets["private_subnet_2"].id, 
+  aws_subnet.private_subnets["private_subnet_3"].id]
+  min_size            = 0
+  max_size            = 1
+  desired_capacity    = 1
+
+  # Launch template
+  create_launch_template = true
+
+  image_id      = data.aws_ami.amazon-linux-2.id
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "Web EC2 Server 2"
+  }
+} */
