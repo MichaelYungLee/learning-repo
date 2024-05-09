@@ -9,9 +9,26 @@ data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
 
 locals {
-  team        = "api_mgm_dev"
+  team        = "api_mgmt_dev"
   application = "corp_api"
   server_name = "ec2-${var.environment}-api-${var.variables_sub_az}"
+}
+
+locals {
+  service_name = "Automation"
+  app_team     = "Cloud Team"
+  createdby    = "terraform"
+}
+
+locals {
+  common_tags = {
+    Name      = local.server_name
+    Owner     = local.team
+    App       = local.application
+    Service   = local.service_name
+    AppTeam   = local.app_team
+    CreatedBy = local.createdby
+  }
 }
 
 #Define the VPC
@@ -113,7 +130,7 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "web_server" {
   ami                         = data.aws_ami.amazon-linux-2.id
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.public_subnets["public_subnet_1"].id
@@ -140,16 +157,11 @@ resource "aws_instance" "web" {
     ]
   }
 
-  tags = {
-    "Terraform" = "true"
-    Name        = local.server_name
-    Owner       = local.team
-    App         = local.application
-  }
+  tags = local.common_tags
 }
 
 resource "aws_s3_bucket" "new_s3_bucket" {
-  bucket = "my-new-tf-test-bucket-myl-${lower(random_id.randomness.id)}"
+  bucket = "my-new-tf-test-bucket-myl-${lower(replace(random_id.randomness.id, "_", ""))}"
 
   tags = {
     Name    = "My S3 Bucket"
@@ -225,6 +237,15 @@ resource "aws_key_pair" "generated" {
 
   lifecycle {
     ignore_changes = [key_name]
+  }
+}
+
+/* resource "aws_instance" "web_server_2" {
+  ami           = data.aws_ami.amazon-linux-2.id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_subnets["public_subnet_2"].id
+  tags = {
+    Name = "EC2 Web Server 2"
   }
 }
 

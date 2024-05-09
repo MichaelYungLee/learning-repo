@@ -5,7 +5,7 @@ output "vpc_id" {
 
 output "public_url" {
   description = "Public URL for our Web Server"
-  value       = "https://${aws_instance.web.private_ip}:8080/index.html"
+  value       = "https://${aws_instance.web_server.private_ip}:8080/index.html"
 }
 
 output "vpc_information" {
@@ -13,11 +13,16 @@ output "vpc_information" {
   value       = "Your ${aws_vpc.vpc.tags.Environment} VPC has an ID of ${aws_vpc.vpc.id}"
 }
 
-/* output "public_ip" {
-  value = module.server.public_ip
+output "public_ip" {
+  value = aws_instance.web_server.public_ip
 }
 
-output "public_dns" {
+output "ec2_instance_arn" {
+  value = aws_instance.web_server.arn
+  sensitive = true
+}
+
+/* output "public_dns" {
   value = module.server.public_dns
 }
 
