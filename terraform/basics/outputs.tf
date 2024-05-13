@@ -18,8 +18,28 @@ output "public_ip" {
 }
 
 output "ec2_instance_arn" {
-  value = aws_instance.web_server.arn
+  value     = aws_instance.web_server.arn
   sensitive = true
+}
+
+output "data_bucket_arn" {
+  value = data.aws_s3_bucket.data_bucket.arn
+}
+
+output "data_bucket_domain_name" {
+  value = data.aws_s3_bucket.data_bucket.bucket_domain_name
+}
+
+output "data_bucket_region" {
+  value = "The ${data.aws_s3_bucket.data_bucket.id} bucket is located in ${data.aws_s3_bucket.data_bucket.region}"
+}
+
+output "max_value" {
+  value = local.maximum
+}
+
+output "min_value" {
+  value = local.minimum
 }
 
 /* output "public_dns" {

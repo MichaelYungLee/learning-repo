@@ -8,6 +8,28 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
 
+data "aws_s3_bucket" "data_bucket" {
+  bucket = "my-data-lookup-bucket-myl"
+}
+
+resource "aws_iam_policy" "policy" {
+  name        = "data_bucket_policy"
+  description = "Allow access to my bucket"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:Get*",
+          "s3:List*"
+        ],
+        "Resource" : "${data.aws_s3_bucket.data_bucket.arn}"
+      }
+    ]
+  })
+}
+
 locals {
   team        = "api_mgmt_dev"
   application = "corp_api"
@@ -22,13 +44,18 @@ locals {
 
 locals {
   common_tags = {
-    Name      = local.server_name
-    Owner     = local.team
-    App       = local.application
-    Service   = local.service_name
-    AppTeam   = local.app_team
-    CreatedBy = local.createdby
+    Name      = lower(local.server_name)
+    Owner     = lower(local.team)
+    App       = lower(local.application)
+    Service   = lower(local.service_name)
+    AppTeam   = lower(local.app_team)
+    CreatedBy = lower(local.createdby)
   }
+}
+
+locals {
+  maximum = max(var.num_1, var.num_2, var.num_3)
+  minimum = min(var.num_1, var.num_2, var.num_3)
 }
 
 #Define the VPC
@@ -36,9 +63,9 @@ resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name        = var.vpc_name
-    Environment = "demo_environment"
-    Terraform   = "true"
+    Name        = upper(var.vpc_name)
+    Environment = upper(var.environment)
+    Terraform   = upper("true")
     Region      = data.aws_region.current.name
   }
 }
@@ -144,9 +171,9 @@ resource "aws_instance" "web_server" {
   }
 
   # Leave first part of block unchaged and create our `local-exec` provisioner
-  provisioner "local-exec" {
+  /*   provisioner "local-exec" {
     command = "chmod 600 ${local_file.private_key_pem.filename}"
-  }
+  } */
 
   provisioner "remote-exec" {
     inline = [
@@ -226,10 +253,10 @@ resource "tls_private_key" "generated" {
   algorithm = "RSA"
 }
 
-resource "local_file" "private_key_pem" {
+/* resource "local_file" "private_key_pem" {
   content  = tls_private_key.generated.private_key_pem
   filename = "MyAWSKey.pem"
-}
+} */
 
 resource "aws_key_pair" "generated" {
   key_name   = "MyAWSKey"
@@ -237,6 +264,34 @@ resource "aws_key_pair" "generated" {
 
   lifecycle {
     ignore_changes = [key_name]
+  }
+}
+
+resource "aws_subnet" "list_subnet" {
+  for_each          = var.env
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = each.value.ip
+  availability_zone = each.value.az
+}
+
+resource "aws_security_group" "main" {
+  name   = "core-sg-global"
+  vpc_id = aws_vpc.vpc.id
+
+  dynamic "ingress" {
+    for_each = var.web_ingress
+    content {
+      description = ingress.value.description
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    # prevent_destroy = true
   }
 }
 
@@ -249,7 +304,7 @@ resource "aws_key_pair" "generated" {
   }
 }
 
-/* module "server" {
+module "server" {
   source          = "./modules/server"
   ami             = data.aws_ami.amazon-linux-2.id
   size            = "t2.micro"
@@ -265,7 +320,8 @@ module "server_subnet_1" {
   private_key = tls_private_key.generated.private_key_pem
   subnet_id   = aws_subnet.public_subnets["public_subnet_1"].id
   security_groups = [
-    aws_security_group.my-new-security-group.id
+    aws_security_group.my-new-security-group.id,
+    aws_security_group.main.id
   ]
 }
 
